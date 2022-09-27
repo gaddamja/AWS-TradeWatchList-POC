@@ -2,9 +2,9 @@ name: TradeWatchlistService CI with Maven
 
 on:
   push:
-    branches: [ TradeWatchlistService ]
+    branches: [ main ]
   pull_request:
-    branches: [ TradeWatchlistService ]
+    branches: [ main ]
 
 jobs:
   build:
