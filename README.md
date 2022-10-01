@@ -4,3 +4,5 @@ TradeWtachlistService - SpringBoot Application
   > An Endpoint is published that is consumed by the React TRADE Watchlist UI
   
 Application server to run this Service - Apache Tomcat
+
+Testing GitHub Actions CI
