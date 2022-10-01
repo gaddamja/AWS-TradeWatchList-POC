@@ -49,7 +49,7 @@ public class TradeController {
 		
 		//Root root = jsonParser(data.getBody()); //jsonConverter();
 		
-		List<Currency> currencies = currRepository.findByFromSymbol(fromSymbol);
+		List<Currency> currencies = currRepository.findByFromSymbolAndToSymbol(fromSymbol,toSymbol);
 		log.info("currency size for fromsymbol : {} is : {}",fromSymbol, currencies.size());
 		Root root = new Root();
 		root.setCurrency(currencies);
