@@ -1,11 +1,15 @@
 package com.trade.rest;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.inject.Inject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +29,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.trade.domain.Currency;
 import com.trade.domain.CurrencyRepository;
+import com.trade.domain.Stocks;
+import com.trade.domain.StocksRepository;
+import com.trade.dto.Stock;
+import com.trade.util.TradeUtil;
 
 @Component
 @lombok.extern.slf4j.Slf4j
@@ -36,11 +44,20 @@ public class TradeRestClient {
 	@Value("${currency.toconvert}")
 	private String currencyToConvert;
 	
+	@Value("${stocks.tickers}")
+	private String stocksTickers;
+	
 	@Autowired 
 	private CurrencyRepository currRepository;
 	
+	@Autowired 
+	private StocksRepository stocksRepository;
 	
-	@Scheduled(cron = "0 0 7 * * ?",zone = "Europe/London")
+	
+	@Inject
+	private TradeUtil tradeUtil;
+	
+	@Scheduled(cron = "0 0 19 * * FRI",zone = "Europe/London")
 	//@Scheduled(fixedRate = 1000)
 	public void getTrades() {
 		HttpHeaders headers = new HttpHeaders();
@@ -52,18 +69,29 @@ public class TradeRestClient {
 		params.put("lang", "en");
 		params.put("region", "US");
 		 
-		//System.out.println(restTemplate().exchange("https://yfapi.net/v6/finance/quote/marketSummary", HttpMethod.GET, entity, String.class, params));;
-		
-		
-		
+		//8M43lO9FSkov0CrXmddNSuJuS2d8Cg6Q
+		/**
+		 * Currency data consumer logic
+		 */
 		String[] currConvertList = currencyToConvert.split("\\|");
 		Arrays.asList(currConvertList).stream().forEach(a -> {
 			log.info("currency converter for currency combi : {}",a);
 			String[] currencies = a.split("\\-");
 			log.info("currency converter for currency : {} {}",currencies[0],currencies[1]);
 			ResponseEntity<String> data = restTemplate().exchange(apiHost+"?function=FX_INTRADAY&from_symbol="+currencies[0]+"&to_symbol="+currencies[1]+"&interval=60min&apikey=9YJ6C63O6I7TXBKR", HttpMethod.GET, entity, String.class);
-			jsonParser(data.getBody()); 
+			 List<Currency> currencylist = tradeUtil.currencyParser(data.getBody());
+			 currRepository.saveAll(currencylist);
 		});
+		
+		/**
+		 * Stocks data consumer logic 
+		 */
+		
+		String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date()); //ex 2022-11-04
+		ResponseEntity<String> stocks = restTemplate().exchange("https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/"+date+"?adjusted=true&include_otc=true&apiKey=8M43lO9FSkov0CrXmddNSuJuS2d8Cg6Q", HttpMethod.GET, entity, String.class);
+		List<Stocks> stockList = tradeUtil.stocksParser(stocks.getBody(), date, stocksTickers);
+		stocksRepository.saveAll(stockList);
+		System.out.println("stocklist size : "+stockList.size());
 		
 	}
 	
@@ -76,35 +104,5 @@ public class TradeRestClient {
 		return new RestTemplate(factory);
 	}
 	 
-	private void jsonParser(String data) {
-		
-    	try {
-	        List<Currency> currencies = new ArrayList<Currency>();
-			JsonParser jsonParser = new JsonParser();
-	        JsonObject jsonObject = (JsonObject) jsonParser.parse(data);
-	        JsonElement metadata = jsonObject.get("Meta Data");
-	        //String index = metadata.get("2. From Symbol").getAsString();
-	        String fromSymbol = metadata.getAsJsonObject().get("2. From Symbol").toString();
-	        String toSymbol = metadata.getAsJsonObject().get("3. To Symbol").toString();
-	        JsonElement timeSeriesData = jsonObject.get("Time Series FX (60min)");
-	        Set<Map.Entry<String, JsonElement>> entrySet = timeSeriesData.getAsJsonObject().entrySet();
-	        entrySet.parallelStream().forEach(entry -> {
-	            Currency curr = new Currency();
-	            curr.setPriceDate(entry.getKey());
-	            curr.setFromSymbol(fromSymbol.replace("\"", ""));
-	            curr.setToSymbol(toSymbol.replace("\"", ""));
-	            curr.setHigh(entry.getValue().getAsJsonObject().get("2. high").getAsString());
-	            curr.setLow(entry.getValue().getAsJsonObject().get("3. low").getAsString());
-	            curr.setLast(entry.getValue().getAsJsonObject().get("4. close").getAsString());
-	            curr.setChangePercent("0.0");
-	            curr.setChnge("0.0");
-	            currencies.add(curr);
-	            //log.info("currency size for fromsymbol : {} is : {}",fromSymbol, currencies.size());
-	        });
-	        
-	        currRepository.saveAll(currencies);
-    	} catch (Exception e) {
-    		log.error("Exception while data conversion and persisting to DB : {} ",e.getMessage());
-    	}
-	}
+	
 }

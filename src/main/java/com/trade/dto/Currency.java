@@ -24,7 +24,7 @@ public class Currency {
 	
 	@Override
 	public String toString() {
-		return "Stock [fromSymbol=" + fromSymbol + ", toSymbol=" + toSymbol + ", last=" + last + ", high=" + high + ", low=" + low
+		return "Currency [fromSymbol=" + fromSymbol + ", toSymbol=" + toSymbol + ", last=" + last + ", high=" + high + ", low=" + low
 				+ ", change=" + change + ", changePercent=" + changePercent + ", time=" + time + "]";
 	}
 	

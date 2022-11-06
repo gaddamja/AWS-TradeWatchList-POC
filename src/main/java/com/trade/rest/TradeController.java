@@ -1,13 +1,10 @@
 package com.trade.rest;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -17,10 +14,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trade.domain.Currency;
 import com.trade.domain.CurrencyRepository;
-import com.trade.dto.Root;
+import com.trade.dto.AllCurrency;
 
 
 @CrossOrigin(origins = "*")
@@ -35,7 +31,7 @@ public class TradeController {
 	
 	
 	@GetMapping(value="tradeRequest/{fromSymbol}/{toSymbol}")
-	public Root getTrades(@PathVariable String fromSymbol,@PathVariable String toSymbol) {
+	public AllCurrency getTrades(@PathVariable String fromSymbol,@PathVariable String toSymbol) {
 		//restClient.getTrades();
 		System.out.println("****** Inside Trading App *******");
 		HttpHeaders headers = new HttpHeaders();
@@ -51,13 +47,13 @@ public class TradeController {
 		
 		List<Currency> currencies = currRepository.findByFromSymbolAndToSymbol(fromSymbol,toSymbol);
 		log.info("currency size for fromsymbol : {} is : {}",fromSymbol, currencies.size());
-		Root root = new Root();
-		root.setCurrency(currencies);
-		return root;
+		AllCurrency allCurrency = new AllCurrency();
+		allCurrency.setCurrency(currencies);
+		return allCurrency;
 		
 	}
 	
-	private Root jsonConverter() {
+	/*private Root jsonConverter() {
 		try {
 			ObjectMapper mapper = new ObjectMapper();
 			Root root = mapper.readValue(new File((SystemUtils.getUserDir().getAbsolutePath() + "/src/main/resources/templates/Sample1.json")), Root.class);
@@ -68,6 +64,6 @@ public class TradeController {
         	System.out.println(e.getMessage());
         }
 		return null;
-	}
+	}*/
 
 }
