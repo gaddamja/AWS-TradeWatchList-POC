@@ -7,8 +7,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @Entity
+@JsonPropertyOrder
 public class Stocks {
 	
 	@Id

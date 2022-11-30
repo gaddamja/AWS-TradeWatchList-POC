@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Currency {
 	
 	@Id
-	@GeneratedValue(strategy=GenerationType.SEQUENCE)
+	@GeneratedValue(strategy=GenerationType.AUTO)
 	@Column(name="SERIALNUMBER", nullable = false, unique = true)
 	public Integer serialNumber;
 	

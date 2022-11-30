@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.springframework.data.repository.CrudRepository;
 
+
 /**
  * @author nimishashah
  *
@@ -14,5 +15,7 @@ import org.springframework.data.repository.CrudRepository;
 public interface CurrencyRepository extends CrudRepository<Currency, Integer> {
 	
 	List<Currency> findByFromSymbolAndToSymbol(String fromSymbol, String toSymbol);
+	
+	List<Currency> findAll();
 
 }

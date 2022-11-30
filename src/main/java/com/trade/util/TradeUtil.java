@@ -1,6 +1,9 @@
 package com.trade.util;
 
-import java.security.cert.CollectionCertStoreParameters;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.google.gson.JsonArray;
@@ -20,6 +24,12 @@ import com.trade.domain.Stocks;
 @Component
 @lombok.extern.slf4j.Slf4j
 public class TradeUtil {
+	
+	@Value("${stock_start_date}")
+	private String startDate;
+	
+	@Value("${stock_end_date}")
+	private String endDate;
 	
 	public List<Currency> currencyParser(String data) {
 			
@@ -83,5 +93,23 @@ public class TradeUtil {
     	
     	return Collections.emptyList();
     }
+	
+	public List<LocalDate> getFridays() {
+
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+		LocalDate start = LocalDate.parse ( startDate , formatter );
+		LocalDate stop = LocalDate.parse ( endDate , formatter );
+		
+		List<LocalDate> fridays = new ArrayList<> ();  
+		// Collect each Friday found.
+		LocalDate nextOrSameFriday = start.with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY ) );
+		while ( ( null != nextOrSameFriday ) & (  ! nextOrSameFriday.isAfter ( stop ) ) ) 
+		{
+		    fridays.add ( nextOrSameFriday );  //  Remember this friday.
+		    nextOrSameFriday = nextOrSameFriday.plusWeeks ( 1 );  // Move to the next Friday, setting up for next iteration of this loop.
+		}
+		return fridays;
+	}
 
 }

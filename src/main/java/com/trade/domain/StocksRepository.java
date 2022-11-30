@@ -14,5 +14,7 @@ import org.springframework.data.repository.CrudRepository;
 public interface StocksRepository extends CrudRepository<Stocks, Integer> {
 	
 	List<Stocks> findByIndex(String index);
+	
+	List<Stocks> findAll();
 
 }

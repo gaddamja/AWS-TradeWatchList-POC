@@ -1,6 +1,7 @@
 package com.trade.rest;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -22,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.JsonElement;
@@ -57,8 +59,8 @@ public class TradeRestClient {
 	@Inject
 	private TradeUtil tradeUtil;
 	
-	@Scheduled(cron = "0 0 19 * * FRI",zone = "Europe/London")
-	//@Scheduled(fixedRate = 1000)
+    @Scheduled(cron = "0 0 19 * * FRI",zone = "Europe/London")
+	//@Scheduled(fixedRate = 5000)
 	public void getTrades() {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
@@ -87,13 +89,39 @@ public class TradeRestClient {
 		 * Stocks data consumer logic 
 		 */
 		
-		String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date()); //ex 2022-11-04
+		String date = "2022-11-25";//new SimpleDateFormat("yyyy-MM-dd").format(new Date()); //ex 2022-11-04
 		ResponseEntity<String> stocks = restTemplate().exchange("https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/"+date+"?adjusted=true&include_otc=true&apiKey=8M43lO9FSkov0CrXmddNSuJuS2d8Cg6Q", HttpMethod.GET, entity, String.class);
 		List<Stocks> stockList = tradeUtil.stocksParser(stocks.getBody(), date, stocksTickers);
 		stocksRepository.saveAll(stockList);
 		System.out.println("stocklist size : "+stockList.size());
 		
 	}
+    
+   // @Scheduled(fixedRate = 5000)
+	public void generateHistoricalStocks() {
+    	HttpHeaders headers = new HttpHeaders();
+		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+		 
+		HttpEntity<String> entity = new HttpEntity<String>(headers);
+		
+		Map<String,String> params = new HashMap<String, String>();
+		params.put("lang", "en");
+		params.put("region", "US");
+		/**
+		 * Stocks data consumer logic 
+		 */
+		List<LocalDate> fridays = tradeUtil.getFridays();
+		fridays.forEach(date -> {
+			
+			ResponseEntity<String> stocks = restTemplate().exchange("https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/"+date.toString()+"?adjusted=true&include_otc=true&apiKey=8M43lO9FSkov0CrXmddNSuJuS2d8Cg6Q", HttpMethod.GET, entity, String.class);
+			List<Stocks> stockList = tradeUtil.stocksParser(stocks.getBody(), date.toString(), stocksTickers);
+			stocksRepository.saveAll(stockList);
+			System.out.println("stocklist size : "+stockList.size());
+		});
+		
+		
+	}
+	
 	
 	@Bean
 	public RestTemplate restTemplate() {
