@@ -89,7 +89,7 @@ public class TradeRestClient {
 		 * Stocks data consumer logic 
 		 */
 		
-		String date = "2022-11-25";//new SimpleDateFormat("yyyy-MM-dd").format(new Date()); //ex 2022-11-04
+		String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date()); //ex 2022-11-04
 		ResponseEntity<String> stocks = restTemplate().exchange("https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/"+date+"?adjusted=true&include_otc=true&apiKey=8M43lO9FSkov0CrXmddNSuJuS2d8Cg6Q", HttpMethod.GET, entity, String.class);
 		List<Stocks> stockList = tradeUtil.stocksParser(stocks.getBody(), date, stocksTickers);
 		stocksRepository.saveAll(stockList);
