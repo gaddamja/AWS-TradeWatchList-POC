@@ -55,6 +55,11 @@ public class TradeRestClient {
 	@Autowired 
 	private StocksRepository stocksRepository;
 	
+	@Value("${stocks.api.baseurl}")
+	private String stocksapiHost;
+	
+	@Value("${stocks.api.queryparam}")
+	private String stocksapiQueryparam;
 	
 	@Inject
 	private TradeUtil tradeUtil;
@@ -90,14 +95,14 @@ public class TradeRestClient {
 		 */
 		
 		String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date()); //ex 2022-11-04
-		ResponseEntity<String> stocks = restTemplate().exchange("https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/"+date+"?adjusted=true&include_otc=true&apiKey=8M43lO9FSkov0CrXmddNSuJuS2d8Cg6Q", HttpMethod.GET, entity, String.class);
+		ResponseEntity<String> stocks = restTemplate().exchange(stocksapiHost+date+stocksapiQueryparam, HttpMethod.GET, entity, String.class);
 		List<Stocks> stockList = tradeUtil.stocksParser(stocks.getBody(), date, stocksTickers);
 		stocksRepository.saveAll(stockList);
 		System.out.println("stocklist size : "+stockList.size());
 		
 	}
     
-   // @Scheduled(fixedRate = 5000)
+    @Scheduled(fixedRate = 5000)
 	public void generateHistoricalStocks() {
     	HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
@@ -113,10 +118,15 @@ public class TradeRestClient {
 		List<LocalDate> fridays = tradeUtil.getFridays();
 		fridays.forEach(date -> {
 			
-			ResponseEntity<String> stocks = restTemplate().exchange("https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/"+date.toString()+"?adjusted=true&include_otc=true&apiKey=8M43lO9FSkov0CrXmddNSuJuS2d8Cg6Q", HttpMethod.GET, entity, String.class);
+			ResponseEntity<String> stocks = restTemplate().exchange(stocksapiHost+date.toString()+stocksapiQueryparam, HttpMethod.GET, entity, String.class);
 			List<Stocks> stockList = tradeUtil.stocksParser(stocks.getBody(), date.toString(), stocksTickers);
 			stocksRepository.saveAll(stockList);
-			System.out.println("stocklist size : "+stockList.size());
+			log.info("stocklist size : {}",stockList.size());
+			try {
+				Thread.sleep(60000);
+			} catch(InterruptedException e) {
+				log.error("Exception : ",e.getMessage());
+			}
 		});
 		
 		
