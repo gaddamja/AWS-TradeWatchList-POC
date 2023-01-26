@@ -1,0 +1,5 @@
+.target
+/target/
+/bin/
+.settings
+.DS_Store
