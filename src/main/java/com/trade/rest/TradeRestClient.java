@@ -76,11 +76,10 @@ public class TradeRestClient {
 		params.put("lang", "en");
 		params.put("region", "US");
 		 
-		//8M43lO9FSkov0CrXmddNSuJuS2d8Cg6Q
 		/**
-		 * Currency data consumer logic
+		 * Intraday Currency data consumer logic
 		 */
-		String[] currConvertList = currencyToConvert.split("\\|");
+		/*String[] currConvertList = currencyToConvert.split("\\|");
 		Arrays.asList(currConvertList).stream().forEach(a -> {
 			log.info("currency converter for currency combi : {}",a);
 			String[] currencies = a.split("\\-");
@@ -88,8 +87,26 @@ public class TradeRestClient {
 			ResponseEntity<String> data = restTemplate().exchange(apiHost+"?function=FX_INTRADAY&from_symbol="+currencies[0]+"&to_symbol="+currencies[1]+"&interval=60min&apikey=9YJ6C63O6I7TXBKR", HttpMethod.GET, entity, String.class);
 			 List<Currency> currencylist = tradeUtil.currencyParser(data.getBody());
 			 currRepository.saveAll(currencylist);
-		});
+		});*/
 		
+		/**
+		 * Exchange rate - https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=EUR&to_currency=USD&apikey=GTL6YEQ9CZ95QT3V
+		 */
+		String[] currConvertList = currencyToConvert.split("\\|");
+		Arrays.asList(currConvertList).stream().forEach(a -> {
+			log.info("currency converter for currency combi : {}",a);
+			String[] currencies = a.split("\\-");
+			log.info("currency converter for currency : {} {}",currencies[0],currencies[1]);
+			ResponseEntity<String> data = restTemplate().exchange(apiHost+"?function=CURRENCY_EXCHANGE_RATE&from_currency="+currencies[0]+"&to_currency="+currencies[1]+"&apikey=GTL6YEQ9CZ95QT3V", HttpMethod.GET, entity, String.class);
+			 List<Currency> currencylist = tradeUtil.xchangeRateParser(data.getBody());
+			 currRepository.saveAll(currencylist);
+			 try {
+				Thread.sleep(60000);
+			 } catch(InterruptedException e) {
+				log.error("Exception : ",e.getMessage());
+			}
+		});
+	
 		/**
 		 * Stocks data consumer logic 
 		 */

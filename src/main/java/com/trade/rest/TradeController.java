@@ -41,11 +41,8 @@ public class TradeController {
 	private StocksRepository stockRepository;
 	
 	
-	
-	
 	@GetMapping(value="tradeRequest/currencies", produces = "application/json")
 	public List<Currency> getCurrencies() {
-		//restClient.getTrades();
 		log.info("****** Inside Trading App *******");
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
@@ -55,12 +52,7 @@ public class TradeController {
 		Map<String,String> params = new HashMap<String, String>();
 		params.put("lang", "en");
 		params.put("region", "US");
-		//ResponseEntity<String> data = restTemplate().exchange("https://www.alphavantage.co/query?function=FX_INTRADAY&from_symbol="+fromSymbol+"&to_symbol="+toSymbol+"&interval=60min&apikey=9YJ6C63O6I7TXBKR", HttpMethod.GET, entity, String.class);
 		
-		//Root root = jsonParser(data.getBody()); //jsonConverter();
-		
-		
-		//AllCurrency allCurrency = new AllCurrency();
 		List<Currency> currencyList = new ArrayList<Currency>();
 		currRepository.findAll().forEach(c -> {
 			Currency curr = new Currency();
@@ -69,7 +61,6 @@ public class TradeController {
 			curr.setPriceDate(c.getPriceDate());
 			currencyList.add(curr);
 		});
-		//allCurrency.setCurrency(currencyList);
 		return currencyList;
 		
 	}
@@ -84,10 +75,7 @@ public class TradeController {
 		Map<String,String> params = new HashMap<String, String>();
 		params.put("lang", "en");
 		params.put("region", "US");
-		//ResponseEntity<String> data = restTemplate().exchange("https://www.alphavantage.co/query?function=FX_INTRADAY&from_symbol="+fromSymbol+"&to_symbol="+toSymbol+"&interval=60min&apikey=9YJ6C63O6I7TXBKR", HttpMethod.GET, entity, String.class);
-		
-		//Root root = jsonParser(data.getBody()); //jsonConverter();
-		
+			
 		List<Stocks> stocks = stockRepository.findAll();
 		log.info("stocks size is {}", stocks.size());
 		AllStocks allStocks = new AllStocks();
@@ -96,21 +84,5 @@ public class TradeController {
 		return stocks;
 		
 	}
-	
-	
-	
-	
-	/*private Root jsonConverter() {
-		try {
-			ObjectMapper mapper = new ObjectMapper();
-			Root root = mapper.readValue(new File((SystemUtils.getUserDir().getAbsolutePath() + "/src/main/resources/templates/Sample1.json")), Root.class);
-            
-            System.out.println(root.toString());
-            return root;
-        } catch (IOException e) {
-        	System.out.println(e.getMessage());
-        }
-		return null;
-	}*/
 
 }

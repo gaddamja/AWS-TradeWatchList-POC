@@ -65,6 +65,33 @@ public class TradeUtil {
     	return Collections.emptyList();
     }
 	
+	
+	public List<Currency> xchangeRateParser(String data) {
+		
+    	try {
+	        List<Currency> currencies = new ArrayList<Currency>();
+			JsonParser jsonParser = new JsonParser();
+	        JsonObject jsonObject = (JsonObject) jsonParser.parse(data);
+	        JsonElement currExchgRate = jsonObject.get("Realtime Currency Exchange Rate");
+            Currency curr = new Currency();
+            curr.setPriceDate(currExchgRate.getAsJsonObject().get("6. Last Refreshed").getAsString());
+            curr.setFromSymbol(currExchgRate.getAsJsonObject().get("1. From_Currency Code").getAsString());
+            curr.setToSymbol(currExchgRate.getAsJsonObject().get("3. To_Currency Code").getAsString());
+            curr.setHigh(currExchgRate.getAsJsonObject().get("9. Ask Price").getAsString());
+            curr.setLow(currExchgRate.getAsJsonObject().get("8. Bid Price").getAsString());
+            curr.setLast(currExchgRate.getAsJsonObject().get("5. Exchange Rate").getAsString());
+            curr.setChangePercent("0.0");
+            curr.setChnge("0.0");
+            currencies.add(curr);
+            //log.info("currency size for fromsymbol : {} is : {}",fromSymbol, currencies.size());
+	        return currencies;
+    	} catch (Exception e) {
+    		log.error("Exception while data conversion and persisting to DB : {} ",e.getMessage());
+    	}
+    	
+    	return Collections.emptyList();
+    }
+	
 	public List<Stocks> stocksParser(String data, String date, String stocksTickers) {
 		
     	try {
